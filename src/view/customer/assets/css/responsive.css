@@ -1,0 +1,98 @@
+@media screen and (max-width: 768px) {
+    /* HEADER */
+    .header-container-left {
+        flex: 1;
+    }
+
+    .header-container-mid.hide-on-mobile{
+        display: none;
+    }
+
+    .header-container-mid .menu-list.hide-on-mobile {
+        display: none;
+    }
+
+    .header-container-right .menu-list .hide-on-mobile {
+        display: none;
+    }
+
+    .container.hamburger-menu-button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0 1rem;
+        font-size: 1.5rem;
+        border-left: 1px solid var(--border-color);
+    }
+
+    /* SIDEBARS */
+    .sidebar.open {
+        visibility: visible;
+        width: 100%;
+    }
+
+
+
+    /* CATALOGUE - INFO */
+    .catalogue-info .reset-filter.hide-on-mobile {
+        display: none;
+    }
+
+    /* CATALOGUE - DETAIL SEARCH */
+    .details-search-bar.show-on-mobile {
+        outline: 1px solid var(--border-color);
+        background-color: white;
+        height: 35px;
+        width: 95%;
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        padding: 0 1rem;
+        border-radius: 0.5rem;
+    }
+
+    .details-search-bar p {
+        font-size: large;
+        font-weight: lighter;
+        padding-left: 10px;
+    }
+
+    .details-search.hide-on-mobile {
+        display: none;
+    }
+
+    .shoes-box.show-on-mobile {
+        flex: 1;
+    }
+
+    /* PRODUCT BOX */
+    .shoes-box-container {
+        flex: 0 0 100%;
+    }
+
+    /* CHECKOUT */
+    .checkout-section {
+        flex-direction: column-reverse;
+    }
+    .checkout-col-left,
+    .checkout-col-right {
+        width: 100%;
+    }
+}
+
+/* FOR FOOTER-CONTAINER-INFO */
+@media screen and (max-width: 526px) {
+    .footer-container-info {
+        justify-content: flex-start;
+    }
+
+    .container.toast {
+        max-height: 30vh !important;
+    }
+}
+
+@media screen and (max-width: 425px) {
+}
+
+@media screen and (max-width: 376px) {
+}
