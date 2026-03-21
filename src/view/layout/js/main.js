@@ -83,7 +83,7 @@ function toggleChangePass() {
 }
 
 // Change current user"s password
-function changePassword() {  
+function changePassword() {
     let currentPassword = document.getElementById("password-cur-info").value.trim();
     let newPassword = document.getElementById("password-after-info").value.trim();
     let confirmNewPassword = document.getElementById("password-confirm-info").value.trim();
@@ -94,7 +94,7 @@ function changePassword() {
     document.querySelectorAll(".change-password .form-msg-error").forEach(msg => {
         msg.textContent = "";
     });
- 
+
 
     if (!currentPassword) {
         document.querySelector("#password-cur-info + .form-msg-error").innerText = "Please enter current password";
@@ -333,7 +333,7 @@ async function checkLogin() {
 
         // Kiểm tra phản hồi có hợp lệ và là JSON không
         if (!res.ok) throw new Error("Network response was not ok");
-        
+
         const contentType = res.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
             throw new Error("Expected JSON, got something else!");
@@ -434,10 +434,10 @@ function setupEventListeners() {
             toastMsg({ title: "REMINDER", message: "Please choose a size first!", type: "info" });
             return;
         }
-    
+
         const isLoggedIn = await checkLogin();
         if (!isLoggedIn) return;
-    
+
         let quantityInput = document.querySelector(".input-qty");
         let quantity = quantityInput ? parseInt(quantityInput.value) : 1;
         let price = parseInt(document.querySelector(".current-price").dataset.price || 0);
@@ -448,12 +448,12 @@ function setupEventListeners() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ productsizeid: selectedSizeId, quantity, price })
             });
-    
+
             console.log("Response Status: ", response.status); // Log mã trạng thái HTTP
             const textResponse = await response.text(); // Đọc phản hồi dưới dạng text
-    
+
             console.log("Raw response: ", textResponse); // Log nội dung raw của phản hồi
-    
+
             // Kiểm tra xem phản hồi có phải là JSON không
             let data;
             try {
@@ -463,10 +463,10 @@ function setupEventListeners() {
                 toastMsg({ title: "ERROR", message: "Server response is not JSON", type: "error" });
                 return;
             }
-    
+
             if (data.success) {
                 toastMsg({ title: "SUCCESS", message: "Added successfully!", type: "success" });
-                loadCartSummary(); 
+                loadCartSummary();
                 fetchHeaderQty();
                 if (quantityInput) quantityInput.value = 1;
                 document.querySelector('.modal.product-detail').classList.remove('open');
@@ -479,8 +479,8 @@ function setupEventListeners() {
             console.error("Lỗi khi fetch:", err);
         }
     });
-    
-    
+
+
 
     // Kiểm tra phần tử checkout-btn có tồn tại không trước khi đăng ký sự kiện
     const checkoutButton = document.querySelector("#checkout-modal-btn");
@@ -495,10 +495,10 @@ function setupEventListeners() {
             toastMsg({ title: "REMINDER", message: "Please choose a size first!", type: "info" });
             return;
         }
-    
+
         const isLoggedIn = await checkLogin();
         if (!isLoggedIn) return;
-    
+
         let quantityInput = document.querySelector(".product-detail .input-qty");
         let quantity = quantityInput ? parseInt(quantityInput.value) : 1;
         let price = parseInt(document.querySelector(".current-price").dataset.price || 0);
@@ -513,33 +513,33 @@ function setupEventListeners() {
             Size: document.querySelector(".size-container button.active").innerText,
             product_image: document.querySelector(".product-detail-content img").src
         };
-        
+
         fetch("/Web2/src/controller/db_controller/cart.php?action=set_checkout_session", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ products: [productData] }) // luôn là mảng nha
         })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                window.checkoutMode = "buy_now_checkout"; 
-                toggleModal("product-detail");
-                toggleModal("checkout-page");
-                renderCheckoutUI();
-            } else {
-                toastMsg({ title: "ERROR", message: data.message || "Có lỗi khi lưu session!", type: "error" });
-            }
-        })
-        .catch(err => {
-            console.error("Lỗi:", err);
-            toastMsg({ title: "ERROR", message: "Không thể kết nối đến server.", type: "error" });
-        });
-    });        
-}    
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.checkoutMode = "buy_now_checkout";
+                    toggleModal("product-detail");
+                    toggleModal("checkout-page");
+                    renderCheckoutUI();
+                } else {
+                    toastMsg({ title: "ERROR", message: data.message || "Có lỗi khi lưu session!", type: "error" });
+                }
+            })
+            .catch(err => {
+                console.error("Lỗi:", err);
+                toastMsg({ title: "ERROR", message: "Không thể kết nối đến server.", type: "error" });
+            });
+    });
+}
 
 function handleReturnFromCheckout() {
     console.log("checkoutMode hiện tại:", window.checkoutMode);
-        // Gọi API xoá session checkout nếu đang trong chế độ 'buy now'
+    // Gọi API xoá session checkout nếu đang trong chế độ 'buy now'
     fetch("/Web2/src/controller/db_controller/cart.php?action=clear_checkout_session", {
         method: "POST"
     });
@@ -560,28 +560,28 @@ function renderCheckoutUI() {
         return;
     }
 
-    fetch("/Web2/src/controller/db_controller/cart.php?action=get_checkout_session", {method: "POST"})
-    .then(res => {
-        if (!res.ok) throw new Error("Lỗi khi fetch dữ liệu từ session.");
+    fetch("/Web2/src/controller/db_controller/cart.php?action=get_checkout_session", { method: "POST" })
+        .then(res => {
+            if (!res.ok) throw new Error("Lỗi khi fetch dữ liệu từ session.");
             return res.json();
-        })    
+        })
         .then(data => {
             const checkoutBody = document.querySelector(".checkout-page .cart-body");
             const totalPriceElem = document.querySelector(".checkout-page .display-totalprice");
-        
+
             if (!data.success || !Array.isArray(data.product)) {
                 checkoutBody.innerHTML = "<p>Không có sản phẩm nào trong session.</p>";
                 totalPriceElem.innerHTML = "0 VND";
                 return;
             }
-        
+
             let checkoutHTML = "";
             let totalPrice = 0;
-        
+
             data.product.forEach(product => {
                 const itemTotal = product.Price * product.Quantity;
                 totalPrice += itemTotal;
-        
+
                 checkoutHTML += `
                     <div class="modal-container cart-item" data-productID="${product.ProductSizeID}">
                         <div class="img-container">
@@ -598,11 +598,11 @@ function renderCheckoutUI() {
                     </div>
                 `;
             });
-        
+
             checkoutBody.innerHTML = checkoutHTML;
             totalPriceElem.innerHTML = vnd(totalPrice);
             document.querySelectorAll(".display-totalorder").forEach(el => el.innerText = vnd(totalPrice + 30000));
-        })        
+        })
         .catch(err => {
             console.error("Lỗi khi tải dữ liệu từ session:", err);
             checkoutBody.innerHTML = "<p>Đã xảy ra lỗi khi tải dữ liệu từ session.</p>";
@@ -752,16 +752,16 @@ function deleteCartItem(productsizeid, el) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productsizeid })
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            showCart(); // reload cart
-            loadCartSummary();
-            fetchHeaderQty();
-        } else {
-            toastMsg({ title: "ERROR", message: data.message, type: "error" });
-        }
-    });
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showCart(); // reload cart
+                loadCartSummary();
+                fetchHeaderQty();
+            } else {
+                toastMsg({ title: "ERROR", message: data.message, type: "error" });
+            }
+        });
 }
 
 function updateCartQtyInHeader(qty) {
@@ -771,7 +771,7 @@ function updateCartQtyInHeader(qty) {
 function handleCheckoutClick() {
     console.log("Checkout button clicked!");
 
-    const checkedItems = getCheckedCartItems();  
+    const checkedItems = getCheckedCartItems();
     console.log("Checked items:", checkedItems);
 
     if (checkedItems.length === 0) {
@@ -784,17 +784,17 @@ function handleCheckoutClick() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ products: checkedItems })
     })
-    .then(res => res.json())
-    .then(data => {
-        console.log("Dữ liệu đã gửi thành công:", data);
-        // Sau khi set session xong thì render checkout UI luôn
-        window.checkoutMode = 'checkout';
-        toggleModal('checkout-page');
-        renderCheckoutUI();
-    })
-    .catch(err => {
-        console.error("Lỗi khi gửi dữ liệu lên server:", err);
-    });
+        .then(res => res.json())
+        .then(data => {
+            console.log("Dữ liệu đã gửi thành công:", data);
+            // Sau khi set session xong thì render checkout UI luôn
+            window.checkoutMode = 'checkout';
+            toggleModal('checkout-page');
+            renderCheckoutUI();
+        })
+        .catch(err => {
+            console.error("Lỗi khi gửi dữ liệu lên server:", err);
+        });
 }
 
 // Hiển thị giỏ hàng
@@ -837,13 +837,13 @@ function showCart() {
             data.cart.forEach(item => {
                 const stock = item.StockQuantity;
                 const qty = item.Quantity;
-            
+
                 totalQty += qty;
-            
+
                 const isDisabled = stock <= 0 || qty > stock;
-            
-                const finalQty = (qty > stock) ? stock : Math.max(1, qty); 
-            
+
+                const finalQty = (qty > stock) ? stock : Math.max(1, qty);
+
                 cartItemhtml += `
                     <div class="modal-container cart-item" data-productID="${item.ProductSizeID}">
                         <div class="cart-item-checkbox">
@@ -1011,9 +1011,9 @@ function vnd(x) {
 // BANNER - BEGIN /////////////////////////////////////////////////////
 
 const imageArray = [
-    '/Web2/src/view/layout/asset/img/banner/banner1.jpg',
-    '/Web2/src/view/layout/asset/img/banner/banner2.jpg',
-    '/Web2/src/view/layout/asset/img/banner/banner3.jpg'
+    'view/layout/asset/img/banner/banner1.jpg',
+    'view/layout/asset/img/banner/banner2.jpg',
+    'view/layout/asset/img/banner/banner3.jpg'
 ];
 
 const bannerImagesContainer = document.querySelector('.banner-images');
