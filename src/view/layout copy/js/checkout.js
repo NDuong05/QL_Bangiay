@@ -67,51 +67,51 @@ function handleCheckout() {
         address: address,
         payment: paymentDetails
     };
-    
+
     console.log("📤 Sending to server:", JSON.stringify(checkoutData, null, 2));
 
     // 3. Gửi request tạo đơn hàng (dùng session có sẵn)
-    fetch("/Web2/src/controller/db_controller/checkout.php", {
+    fetch("controller/db_controller/checkout.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(checkoutData)
     })
-    .then(res => {
-        console.log("📦 Response status:", res.status, res.statusText);
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
-        return res.text();
-    })
-    .then(data => {
-        console.log("📦 Server response (raw text):", data);
-        try {
-            const jsonData = JSON.parse(data);
-            console.log("✅ Parsed JSON:", jsonData);
-            if (jsonData.success) {
-                toastMsg({ title: "Success", message: "We have received your order!", type: "success" });
-                window.checkoutMode = null;
-                toggleModal("checkout-page");
-                fetch("/Web2/src/controller/db_controller/cart.php?action=clear_checkout_session", {
-                    method: "POST"
-                });
-
-                showCart();
-                loadCartSummary(); 
-                fetchHeaderQty(); 
-            } else {
-                toastMsg({ title: "Error", message: jsonData.message || jsonData.error || "Order creation failed", type: "error" });
+        .then(res => {
+            console.log("📦 Response status:", res.status, res.statusText);
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
             }
-        } catch (e) {
-            console.error("❌ JSON Parse error:", e);
-            console.error("Response was:", data);
-            toastMsg({ title: "Error", message: "Invalid response from server. Check console for details.", type: "error" });
-        }
-    })
-    .catch(err => {
-        toastMsg({ title: "Error", message: "Network error: " + err.message, type: "error" });
-        console.error("❌ Checkout error:", err);
-    });
+            return res.text();
+        })
+        .then(data => {
+            console.log("📦 Server response (raw text):", data);
+            try {
+                const jsonData = JSON.parse(data);
+                console.log("✅ Parsed JSON:", jsonData);
+                if (jsonData.success) {
+                    toastMsg({ title: "Success", message: "We have received your order!", type: "success" });
+                    window.checkoutMode = null;
+                    toggleModal("checkout-page");
+                    fetch("controller/db_controller/cart.php?action=clear_checkout_session", {
+                        method: "POST"
+                    });
+
+                    showCart();
+                    loadCartSummary();
+                    fetchHeaderQty();
+                } else {
+                    toastMsg({ title: "Error", message: jsonData.message || jsonData.error || "Order creation failed", type: "error" });
+                }
+            } catch (e) {
+                console.error("❌ JSON Parse error:", e);
+                console.error("Response was:", data);
+                toastMsg({ title: "Error", message: "Invalid response from server. Check console for details.", type: "error" });
+            }
+        })
+        .catch(err => {
+            toastMsg({ title: "Error", message: "Network error: " + err.message, type: "error" });
+            console.error("❌ Checkout error:", err);
+        });
 }
 
 function fetchHeaderQty() {
@@ -236,7 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.success) {
                 // Lấy thông tin địa chỉ mặc định
                 const { Address, ProvinceID, DistrictID, WardID } = data.defaultAddress;
-                
+
                 // Lưu các giá trị tỉnh, quận, xã cho sau này
                 defaultProvinceId = parseInt(ProvinceID);
                 defaultDistrictId = parseInt(DistrictID);

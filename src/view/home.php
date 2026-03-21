@@ -310,6 +310,7 @@ require_once "./controller/controller.php";
                         </div> -->
         </div>
     </div>
+
     <div class="modal product-detail" id="product-detail">
         <button class="modal-close close-popup"><i class="fa-solid fa-xmark"
                 style="color: white;"></i></button>
@@ -390,6 +391,7 @@ require_once "./controller/controller.php";
             </div>
         </div>
     </div>
+
     <!-- CHECKOUT -->
     <div class="checkout-page" id="checkout-page">
         <div class="checkout-header">

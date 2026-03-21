@@ -326,7 +326,7 @@ document.querySelector('.modal-close').addEventListener('click', function () {
 
 async function checkLogin() {
     try {
-        const res = await fetch("/Web2/src/controller/db_controller/cart.php?action=check_login", {
+        const res = await fetch("controller/db_controller/cart.php?action=check_login", {
             method: "POST",
             headers: { "Content-Type": "application/json" }
         });
@@ -443,7 +443,7 @@ function setupEventListeners() {
         let price = parseInt(document.querySelector(".current-price").dataset.price || 0);
 
         try {
-            const response = await fetch("/Web2/src/controller/db_controller/cart.php?action=add_to_cart", {
+            const response = await fetch("controller/db_controller/cart.php?action=add_to_cart", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ productsizeid: selectedSizeId, quantity, price })
@@ -514,7 +514,7 @@ function setupEventListeners() {
             product_image: document.querySelector(".product-detail-content img").src
         };
 
-        fetch("/Web2/src/controller/db_controller/cart.php?action=set_checkout_session", {
+        fetch("controller/db_controller/cart.php?action=set_checkout_session", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ products: [productData] }) // luôn là mảng nha
@@ -540,7 +540,7 @@ function setupEventListeners() {
 function handleReturnFromCheckout() {
     console.log("checkoutMode hiện tại:", window.checkoutMode);
     // Gọi API xoá session checkout nếu đang trong chế độ 'buy now'
-    fetch("/Web2/src/controller/db_controller/cart.php?action=clear_checkout_session", {
+    fetch("controller/db_controller/cart.php?action=clear_checkout_session", {
         method: "POST"
     });
 
@@ -560,7 +560,7 @@ function renderCheckoutUI() {
         return;
     }
 
-    fetch("/Web2/src/controller/db_controller/cart.php?action=get_checkout_session", { method: "POST" })
+    fetch("controller/db_controller/cart.php?action=get_checkout_session", { method: "POST" })
         .then(res => {
             if (!res.ok) throw new Error("Lỗi khi fetch dữ liệu từ session.");
             return res.json();
@@ -779,7 +779,7 @@ function handleCheckoutClick() {
         return;
     }
 
-    fetch("/Web2/src/controller/db_controller/cart.php?action=set_checkout_session", {
+    fetch("controller/db_controller/cart.php?action=set_checkout_session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ products: checkedItems })

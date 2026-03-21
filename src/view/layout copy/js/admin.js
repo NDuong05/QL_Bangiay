@@ -1,12 +1,12 @@
 // API URLs
-const API_BASE_URL = "http://localhost/Web2/src/controller/db_controller/api.php?action=";
+const API_BASE_URL = "http://localhostcontroller/db_controller/api.php?action=";
 
 // Fetch dữ liệu từ API
 async function fetchData(action, method = "GET", body = null) {
     try {
         const options = { method, headers: { "Content-Type": "application/json" } };
         if (body) options.body = JSON.stringify(body);
-        
+
         const response = await fetch(API_BASE_URL + action, options);
         const data = await response.json();
         return data;
@@ -84,7 +84,7 @@ async function showProductList() {
         console.error("Invalid products data:", products);
         return;
     }
-    
+
     let html = "";
     products.forEach((product, index) => {
         html += `
@@ -140,7 +140,7 @@ async function addProduct() {
     const brand = document.querySelector("#productBrand").value;
     const sex = document.querySelector("#sex").value;
     const image = document.querySelector("#productImage").value;
-    
+
     // Lấy danh sách size đã chọn
     const selectedSizes = document.querySelectorAll("input[name='size']:checked");
     const sizeValues = Array.from(selectedSizes).map(checkbox => Number(checkbox.value));
@@ -270,7 +270,7 @@ document.querySelectorAll("#normal input[name=size]").forEach((checkbox) => {
 //Xóa sản phẩm
 async function deleteProduct(id) {
     if (!confirm("Delete this product?")) return;
-    
+
     const response = await fetchData("delete_product", "PUT", { id });
     console.log(response);
     toastMsg({ title: "SUCCESS", message: "Product deleted successfully!", type: "success" });
@@ -279,7 +279,7 @@ async function deleteProduct(id) {
 
 async function restoreProduct(id) {
     if (!confirm("Restore this product?")) return;
-    
+
     const response = await fetchData("restore_product", "PUT", { id });
     console.log(response);
     toastMsg({ title: "SUCCESS", message: "Product restored successfully!", type: "success" });
@@ -329,7 +329,7 @@ function resetFilterProducts() {
     document.getElementById("maxprice-product").value = "";
 
     const validData = localStorage.getItem("products");
-    const products = validData ? JSON.parse(validData).filter (product => product.isDeleted === false) : [];
+    const products = validData ? JSON.parse(validData).filter(product => product.isDeleted === false) : [];
 
     showProductList(0, products);
 }
@@ -425,7 +425,7 @@ async function updateProduct(id) {
     toastMsg({ title: "SUCCESS", message: "Product updated successfully!", type: "success" });
     resetForm();
     showProductList();
-    
+
     // Reset lại form và nút
     document.querySelector(".add h2").textContent = "ADD NEW PRODUCT";
     document.querySelector("#form").textContent = "ADD";
@@ -1267,8 +1267,8 @@ function filterStat(sortby = "none") {
     // Filter orders based on the selected time range
     if (timeStart && timeEnd) {
         filteredOrders_global = filteredOrders_global.filter(order =>
-            new Date(order.orderDate) >= new Date(timeStart).setHours(0,0,0) &&
-            new Date(order.orderDate) <= new Date(timeEnd).setHours(23,59,59)
+            new Date(order.orderDate) >= new Date(timeStart).setHours(0, 0, 0) &&
+            new Date(order.orderDate) <= new Date(timeEnd).setHours(23, 59, 59)
         );
     } else if (timeStart) {
         filteredOrders_global = filteredOrders_global.filter(order =>
@@ -1293,26 +1293,26 @@ function filterStat(sortby = "none") {
 
     // Sort by revenue for products and customers/accounts
     if (sortby === "asc") {
-        filteredProducts_global = filteredProducts_global.sort((a, b) => 
-            getProductRevenue(a.id, filteredOrders_global).revenue - 
+        filteredProducts_global = filteredProducts_global.sort((a, b) =>
+            getProductRevenue(a.id, filteredOrders_global).revenue -
             getProductRevenue(b.id, filteredOrders_global).revenue
         );
         filteredAccounts_global = filteredAccounts_global.sort((a, b) =>
-            getAccountRevenue(a.id, filteredOrders_global) - 
+            getAccountRevenue(a.id, filteredOrders_global) -
             getAccountRevenue(b.id, filteredOrders_global)
         );
     } else if (sortby === "desc") {
-        filteredProducts_global = filteredProducts_global.sort((a, b) => 
-            getProductRevenue(b.id, filteredOrders_global).revenue - 
+        filteredProducts_global = filteredProducts_global.sort((a, b) =>
+            getProductRevenue(b.id, filteredOrders_global).revenue -
             getProductRevenue(a.id, filteredOrders_global).revenue
         );
         filteredAccounts_global = filteredAccounts_global.sort((a, b) =>
-            getAccountRevenue(b.id, filteredOrders_global) - 
+            getAccountRevenue(b.id, filteredOrders_global) -
             getAccountRevenue(a.id, filteredOrders_global)
         );
     }
-    
-    
+
+
 
     // Show the filtered results
     showMilestones(filteredOrders_global);
