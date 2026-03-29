@@ -9,27 +9,25 @@ class User {
         $this->pdo = $pdo;
     }
     public function add($data) {
-        $stmt = $this->pdo->prepare("INSERT INTO user (Username, Fullname, PhoneNumber, Email, Address, PasswordHash, isActivate) 
-                                     VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $this->pdo->prepare("INSERT INTO user (Username, Fullname, PhoneNumber, Email, Address, ProvinceID, DistrictID, WardID, PasswordHash, isActivate) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
-            $data['Username'], 
-            $data['Fullname'], 
-            $data['PhoneNumber'], 
-            $data['Email'], 
-            $data['Address'], 
-            $data['PasswordHash'], 
-            $data['isActivate']
+            $data['Username'], $data['Fullname'], $data['PhoneNumber'], 
+            $data['Email'], $data['Address'], 
+            $data['ProvinceID'], $data['DistrictID'], $data['WardID'],
+            $data['PasswordHash'], $data['isActivate']
         ]);
     }
 
     public function update($data) {
-        $stmt = $this->pdo->prepare("UPDATE user SET Fullname = ?, PhoneNumber = ?, Email = ?, Address = ?, isActivate = ? 
+        $stmt = $this->pdo->prepare("UPDATE user SET Fullname = ?, PhoneNumber = ?, Email = ?, Address = ?, ProvinceID = ?, isActivate = ? 
                                      WHERE UserID = ?");
         $stmt->execute([
             $data['Fullname'], 
             $data['PhoneNumber'], 
             $data['Email'], 
             $data['Address'], 
+            $data['ProvinceID'],
             $data['isActivate'], 
             $data['UserID']
         ]);
