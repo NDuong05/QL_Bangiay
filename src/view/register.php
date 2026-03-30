@@ -1,90 +1,74 @@
 <?php
-require_once("./controller/db_controller/db_connect.php"); // Đảm bảo đã import file kết nối DB
+// session_start();
+require_once("./controller/db_controller/db_connect.php"); 
 
-$toastMessage = ""; // Biến lưu thông báo toast
+$toastMessage = ""; 
 
 if (isset($_POST['btnRegister'])) {
     $username = trim($_POST['username-signup']);
     $fullname = trim($_POST['fullname-signup']);
-    $phone = trim($_POST['phone-signup']);
-    $address = trim($_POST['address-signup']);
-    $provinceID = $_POST['province'];
-    $districtID = $_POST['district'];
-    $wardID = $_POST['ward'];
-    $password = trim($_POST['password-signup']);
+    $email    = trim($_POST['email-signup']);
+    $phone    = trim($_POST['phone-signup']);
+    $address  = trim($_POST['address-signup']);
+    $provinceID = $_POST['province'] ?? null;
+    $districtID = $_POST['district'] ?? null;
+    $wardID     = $_POST['ward'] ?? null;
+    $password   = trim($_POST['password-signup']);
     $confirmPassword = trim($_POST['confirm-password-signup']);
 
-    // Regex kiểm tra dữ liệu nhập vào
+    // Regex kiểm tra dữ liệu
     $usernamePattern = "/^[a-zA-Z0-9]{5,}$/"; 
     $fullnamePattern = "/^[a-zA-ZÀ-Ỹà-ỹ\s]+$/"; 
-    $phonePattern = "/^(0[1-9][0-9]{8,9})$/"; 
-    $passwordPattern = "/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{5,}$/"; 
+    $phonePattern    = "/^(0[1-9][0-9]{8,9})$/"; 
+    $passwordPattern = "/^(?=.*[A-Za-z])(?=.*\d).{5,}$/";
 
-    // Kiểm tra lỗi
     if (!preg_match($usernamePattern, $username)) {
-        $toastMessage = json_encode(["title" => "Error", "message" => "Username must be at least 5 characters, no spaces, no special symbols.", "type" => "error"]);
-    } elseif (!preg_match($fullnamePattern, $fullname)) {
-        $toastMessage = json_encode(["title" => "Error", "message" => "Full name must contain only letters and spaces.", "type" => "error"]);
+        $toastMessage = json_encode(["title" => "Error", "message" => "Username must be at least 5 characters.", "type" => "error"]);
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $toastMessage = json_encode(["title" => "Error", "message" => "Invalid email format.", "type" => "error"]);
     } elseif (!preg_match($phonePattern, $phone)) {
-        $toastMessage = json_encode(["title" => "Error", "message" => "Invalid phone number format.", "type" => "error"]);
+        $toastMessage = json_encode(["title" => "Error", "message" => "Invalid phone number.", "type" => "error"]);
     } elseif (!preg_match($passwordPattern, $password)) {
-        $toastMessage = json_encode(["title" => "Error", "message" => "Password must be at least 5 characters, include at least 1 letter and 1 number.", "type" => "error"]);
+        $toastMessage = json_encode(["title" => "Error", "message" => "Password must have letters and numbers.", "type" => "error"]);
     } elseif ($password !== $confirmPassword) {
         $toastMessage = json_encode(["title" => "Error", "message" => "Passwords do not match.", "type" => "error"]);
     } else {
-        // Kiểm tra trùng username hoặc phone bằng prepared statement
         $pdo = connectdb();
-        $sqlCheck = "SELECT * FROM user WHERE Username = :username OR PhoneNumber = :phone";
+        // Kiểm tra trùng username, phone hoặc email
+        $sqlCheck = "SELECT * FROM user WHERE Username = :username OR PhoneNumber = :phone OR Email = :email";
         $stmt = $pdo->prepare($sqlCheck);
-        $stmt->execute(['username' => $username, 'phone' => $phone]);
-        $userExists = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($userExists) {
-            $toastMessage = json_encode(["title" => "Error", "message" => "Username or phone number already exists!", "type" => "error"]);
+        $stmt->execute(['username' => $username, 'phone' => $phone, 'email' => $email]);
+        
+        if ($stmt->fetch(PDO::FETCH_ASSOC)) {
+            $toastMessage = json_encode(["title" => "Error", "message" => "Account or Email already exists!", "type" => "error"]);
         } else {
-            // Hash mật khẩu
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-            // Lưu vào database
-            $sqlInsert = "INSERT INTO user (Username, Fullname, PhoneNumber, Email, Address, ProvinceID, DistrictID, WardID, PasswordHash, CreatedAt, IsActivate) 
-                          VALUES (:username, :fullname, :phone, NULL, :address, :provinceID, :districtID, :wardID, :password, NOW(), 1)";
+            $sqlInsert = "INSERT INTO user (Username, Fullname, PhoneNumber, Email, Address, ProvinceID, DistrictID, WardID, PasswordHash, CreatedAt, isActivate) 
+            VALUES (:username, :fullname, :phone, :email, :address, :provinceID, :districtID, :wardID, :password, NOW(), 1)";
+
             $stmt = $pdo->prepare($sqlInsert);
             $inserted = $stmt->execute([
                 'username' => $username,
                 'fullname' => $fullname,
-                'phone' => $phone,
-                'address' => $address,
+                'phone'    => $phone,
+                'email'    => $email,
+                'address'  => $address,
                 'provinceID' => $provinceID,
                 'districtID' => $districtID,
-                'wardID' => $wardID,
-                'password' => $hashedPassword
+                'wardID'     => $wardID,
+                'password'   => $hashedPassword
             ]);
 
             if ($inserted) {
-                // Lưu thông tin vào session ngay sau khi đăng ký thành công
                 $_SESSION['user'] = [
                     "Username" => $username,
                     "Fullname" => $fullname,
-                    "PhoneNumber" => $phone,
-                    "Address" => $address,
-                    'provinceID' => $provinceID,
-                    'districtID' => $districtID,
-                    'wardID' => $wardID,
-                    "userID" => $pdo->lastInsertId() // Lưu userID mới vào session
+                    "userID" => $pdo->lastInsertId()
                 ];
-            
-                $toastMessage = json_encode([
-                    "title" => "Success",
-                    "message" => "Account created successfully!",
-                    "type" => "success",
-                    "redirect" => "index.php?pg=home"
-                ]);
+                $toastMessage = json_encode(["title" => "Success", "message" => "Account created!", "type" => "success", "redirect" => "index.php?pg=home"]);
             } else {
-                $toastMessage = json_encode([
-                    "title" => "Error", 
-                    "message" => "Registration failed, please try again!", 
-                    "type" => "error"
-                ]);
+                $toastMessage = json_encode(["title" => "Error", "message" => "Database error!", "type" => "error"]);
             }            
         }
     }
@@ -98,17 +82,11 @@ if (isset($_POST['btnRegister'])) {
     </div>
     <div class="main-login-body">
         <form class="login-form" id="signup-form" method="post">
-            <input class="form-input-bar" type="text" id="username-signup" name="username-signup" placeholder="Username*" required>
-            <p class="form-msg-error"></p>
-
-            <input class="form-input-bar" type="text" id="fullname-signup" name="fullname-signup" placeholder="Full Name*" required>
-            <p class="form-msg-error"></p>
-
-            <input class="form-input-bar" type="number" id="phone-signup" name="phone-signup" placeholder="Phone number*" required>
-            <p class="form-msg-error"></p>
-
-            <input class="form-input-bar" type="text" id="address-signup" name="address-signup" placeholder="Address*" required>
-            <p class="form-msg-error"></p>
+            <input class="form-input-bar" type="text" name="username-signup" placeholder="Username*" required>
+            <input class="form-input-bar" type="text" name="fullname-signup" placeholder="Full Name*" required>
+            <input class="form-input-bar" type="email" name="email-signup" placeholder="Email*" required>
+            <input class="form-input-bar" type="number" name="phone-signup" placeholder="Phone number*" required>
+            <input class="form-input-bar" type="text" name="address-signup" placeholder="Address*" required>
 
             <div class="region-selector sign-up-region">
                 <select id="province" name="province" class="region-select" required>
@@ -117,18 +95,13 @@ if (isset($_POST['btnRegister'])) {
                 <select id="district" name="district" class="region-select" required>
                     <option value="" disabled selected hidden>District</option>
                 </select>
-
                 <select id="ward" name="ward" class="region-select" required>
                     <option value="" disabled selected hidden>Ward/Commune</option>
                 </select>
             </div>
-            <p class="form-msg-error"></p>
 
-            <input class="form-input-bar" type="password" id="password-signup" name="password-signup" placeholder="Password*" required>
-            <p class="form-msg-error"></p>
-
-            <input class="form-input-bar" type="password" id="confirm-password-signup" name="confirm-password-signup" placeholder="Confirm Password*" required>
-            <p class="form-msg-error"></p>
+            <input class="form-input-bar" type="password" name="password-signup" placeholder="Password*" required>
+            <input class="form-input-bar" type="password" name="confirm-password-signup" placeholder="Confirm Password*" required>
 
             <button type="submit" name="btnRegister">SIGN UP</button>
         </form>
@@ -142,17 +115,19 @@ if (isset($_POST['btnRegister'])) {
     window.onload = function() {
         let toastData = <?php echo $toastMessage ?: "null"; ?>;
         if (toastData) {
-            toastMsg({
-                title: toastData.title,
-                message: toastData.message,
-                type: toastData.type,
-                duration: 3000
-            });
+            if (typeof toastMsg === 'function') {
+                toastMsg({
+                    title: toastData.title,
+                    message: toastData.message,
+                    type: toastData.type,
+                    duration: 3000
+                });
+            } else {
+                alert(toastData.message);
+            }
 
             if (toastData.redirect) {
-                setTimeout(() => {
-                    window.location.href = toastData.redirect;
-                }, 2000);
+                setTimeout(() => { window.location.href = toastData.redirect; }, 2000);
             }
         }
     };
