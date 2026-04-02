@@ -1,20 +1,31 @@
 <?php
 require_once 'models/User.php';
 require_once 'models/Permission.php';
+require_once 'models/Province.php';
+require_once 'models/District.php';
+require_once 'models/Ward.php';
+
+// Khởi tạo các Model
 $permissionModel = new Permission($pdo);
+$provinceModel = new Province($pdo);
+$userModel = new User($pdo);
+$districtModel = new District($pdo);
+$wardModel = new Ward($pdo);
+
 $userRoleId = $_SESSION['user']['RoleID'] ?? null;
 $permissions = $permissionModel->getPermissionsByRole($userRoleId);
-$userModel = new User($pdo);
+
 $page = $_GET['page'] ?? '';
 $action = $_GET['action'] ?? 'list';
+
 $hasUserViewPermission = in_array('user_view', $permissions);
 $hasUserAddPermission = in_array('user_add', $permissions);
 $hasUserEditPermission = in_array('user_edit', $permissions);
 $hasUserDeletePermission = in_array('user_delete', $permissions);
+
 switch ($action) {
     case 'add':
         if(!$hasUserAddPermission) {
-            // echo "Bạn không có quyền thêm người dùng.";
             header('Location: admin.php?page=users&action=list');
             exit;
         }
@@ -25,6 +36,9 @@ switch ($action) {
                 'PhoneNumber' => $_POST['PhoneNumber'],
                 'Email' => $_POST['Email'],
                 'Address' => $_POST['Address'],
+                'ProvinceID' => $_POST['ProvinceID'],
+                'DistrictID' => $_POST['DistrictID'],
+                'WardID' => $_POST['WardID'],
                 'PasswordHash' => password_hash($_POST['Password'], PASSWORD_DEFAULT),
                 'isActivate' => $_POST['isActivate']
             ];
@@ -32,13 +46,16 @@ switch ($action) {
             header('Location: admin.php?page=users&action=list');
             exit;
         } else {
+            // Bây giờ các biến này mới có dữ liệu để đổ vào View
+            $provinces = $provinceModel->getAll(); 
+            $districts = $districtModel->getAll();
+            $wards = $wardModel->getAll();
             include 'views/users/add.php';
         }
         break;
 
     case 'edit':
         if(!$hasUserEditPermission) {
-            // echo "Bạn không có quyền sửa người dùng.";
             header('Location: admin.php?page=users&action=list');
             exit;
         }
@@ -49,6 +66,9 @@ switch ($action) {
                 'PhoneNumber' => $_POST['PhoneNumber'],
                 'Email' => $_POST['Email'],
                 'Address' => $_POST['Address'],
+                'ProvinceID' => $_POST['ProvinceID'],
+                'DistrictID' => $_POST['DistrictID'], // BỔ SUNG: Phải có DistrictID khi sửa
+                'WardID' => $_POST['WardID'],         // BỔ SUNG: Phải có WardID khi sửa
                 'isActivate' => $_POST['isActivate']
             ];
             $userModel->update($data);
@@ -56,6 +76,9 @@ switch ($action) {
             exit;
         } else {
             $user = $userModel->getById($_GET['id']);
+            $provinces = $provinceModel->getAll(); 
+            $districts = $districtModel->getAll(); // BỔ SUNG để hiện lại vùng miền cũ
+            $wards = $wardModel->getAll();         // BỔ SUNG
             include 'views/users/edit.php';
         }
         break;
@@ -67,7 +90,6 @@ switch ($action) {
 
     case 'delete':
         if(!$hasUserDeletePermission) {
-            // echo "Bạn không có quyền xóa người dùng.";
             header('Location: admin.php?page=users&action=list');
             exit;
         }
@@ -76,10 +98,6 @@ switch ($action) {
         exit;
         break;
     default:
-        $hasUserViewPermission = in_array('user_view', $permissions);
-        $hasUserAddPermission = in_array('user_add', $permissions);
-        $hasUserEditPermission = in_array('user_edit', $permissions);
-        $hasUserDeletePermission = in_array('user_delete', $permissions);
         $users = $userModel->getAll();
         include 'views/users/list.php';
         break;

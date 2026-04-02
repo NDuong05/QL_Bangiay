@@ -40,7 +40,8 @@ if (isset($_POST['btnRegister'])) {
         $errorMessage = "Passwords do not match.";
     } else {
         $pdo = connectdb();
-        $sqlCheck = "SELECT * FROM user WHERE Username = :username OR PhoneNumber = :phone";
+        // Kiểm tra trùng username, phone hoặc email
+        $sqlCheck = "SELECT * FROM user WHERE Username = :username OR PhoneNumber = :phone OR Email = :email";
         $stmt = $pdo->prepare($sqlCheck);
         $stmt->execute(['username' => $username, 'phone' => $phone]);
         $userExists = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -56,25 +57,20 @@ if (isset($_POST['btnRegister'])) {
             $inserted = $stmt->execute([
                 'username' => $username,
                 'fullname' => $fullname,
-                'phone' => $phone,
-                'address' => $address,
+                'phone'    => $phone,
+                'email'    => $email,
+                'address'  => $address,
                 'provinceID' => $provinceID,
                 'districtID' => $districtID,
-                'wardID' => $wardID,
-                'password' => $hashedPassword
+                'wardID'     => $wardID,
+                'password'   => $hashedPassword
             ]);
 
             if ($inserted) {
-                // Lưu thông tin vào session ngay sau khi đăng ký thành công
                 $_SESSION['user'] = [
                     "Username" => $username,
                     "Fullname" => $fullname,
-                    "PhoneNumber" => $phone,
-                    "Address" => $address,
-                    'provinceID' => $provinceID,
-                    'districtID' => $districtID,
-                    'wardID' => $wardID,
-                    "userID" => $pdo->lastInsertId() // Lưu userID mới vào session
+                    "userID" => $pdo->lastInsertId()
                 ];
 
                 // Sau đó mới gọi Toast và chuyển hướng
@@ -129,13 +125,9 @@ if (isset($_POST['btnRegister'])) {
                     <option value="" disabled selected hidden>Ward/Commune</option>
                 </select>
             </div>
-            <p class="form-msg-error"></p>
 
-            <input class="form-input-bar" type="password" id="password-signup" name="password-signup" placeholder="Password*" required>
-            <p class="form-msg-error"></p>
-
-            <input class="form-input-bar" type="password" id="confirm-password-signup" name="confirm-password-signup" placeholder="Confirm Password*" required>
-            <p class="form-msg-error"></p>
+            <input class="form-input-bar" type="password" name="password-signup" placeholder="Password*" required>
+            <input class="form-input-bar" type="password" name="confirm-password-signup" placeholder="Confirm Password*" required>
 
             <button type="submit" name="btnRegister">SIGN UP</button>
         </form>
@@ -149,12 +141,16 @@ if (isset($_POST['btnRegister'])) {
         let errorMessage = "<?php echo $errorMessage; ?>";
 
         if (toastData) {
-            toastMsg({
-                title: toastData.title,
-                message: toastData.message,
-                type: toastData.type,
-                duration: 3000
-            });
+            if (typeof toastMsg === 'function') {
+                toastMsg({
+                    title: toastData.title,
+                    message: toastData.message,
+                    type: toastData.type,
+                    duration: 3000
+                });
+            } else {
+                alert(toastData.message);
+            }
 
             // Nếu có lỗi cụ thể ở một trường
             if (errorFieldId) {
@@ -173,9 +169,7 @@ if (isset($_POST['btnRegister'])) {
             }
 
             if (toastData.redirect) {
-                setTimeout(() => {
-                    window.location.href = toastData.redirect;
-                }, 2000);
+                setTimeout(() => { window.location.href = toastData.redirect; }, 2000);
             }
         }
     };
